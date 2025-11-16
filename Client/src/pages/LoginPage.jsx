@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const LoginPage: React.FC = () => {
+const LoginPage = () => {
   const [nickname, setNickname] = useState("");
   const navigate = useNavigate();
 

@@ -1,6 +1,6 @@
 
 
-const AdminPage: React.FC = () => {
+const AdminPage = () => {
 
   return (
     <div> 관리자 페이지

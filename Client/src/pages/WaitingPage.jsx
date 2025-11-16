@@ -1,6 +1,6 @@
 
 
-const WaitingPage: React.FC = () => {
+const WaitingPage = () => {
 
   return (
     <div> 대기 페이지

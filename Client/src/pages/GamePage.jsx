@@ -1,6 +1,6 @@
 
 
-const GamePage: React.FC = () => {
+const GamePage = () => {
 
   return (
     <div> 게임 페이지
