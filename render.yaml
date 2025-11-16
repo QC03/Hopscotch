@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: hopscotch-server
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+    rootDir: Server
+    autoDeploy: true
+
+  - type: static
+    name: hopscotch-client
+    staticPublishPath: dist
+    buildCommand: npm run build
+    rootDir: Client
+    envVars:
+      - key: VITE_SERVER_URL
+        value: https://hopscotch-server.onrender.com
+    autoDeploy: true
