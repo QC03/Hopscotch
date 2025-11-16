@@ -73,9 +73,15 @@ io.on("connection", (socket) => {
       sessionData[sessionId] = { nickname, color, inTyping: false };
       callback({ success: true, sessionId });
       
+      // 모든 클라이언트에 참가 인원 업데이트 (본인 포함)
+      console.log("✓ 로그인 완료:", nickname, "색상:", color);
       io.emit("waiting/players", Object.values(players));
+      setTimeout(() => { 
+        io.emit("waiting/players", Object.values(players));
+      }, 500);
+        
       socket.emit("board/init", board, socket.id);
-      console.log("로그인 완료:", nickname, "색상:", color);
+      console.log("  참가 인원:", Object.keys(players).length, "명");
     } catch (err) {
       console.error("로그인 에러:", err);
       callback({ success: false, message: "로그인 중 오류 발생" });
@@ -315,7 +321,8 @@ server.on("error", (err) => {
   console.error("서버 에러:", err);
 });
 
-server.listen(3000, () => {
-  console.log("Socket.IO 서버 http://localhost:3000 실행 중...");
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`Socket.IO 서버 http://localhost:${PORT} 실행 중...`);
   console.log("보드 크기: " + rows + "x" + cols);
 });

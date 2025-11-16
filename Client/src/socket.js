@@ -1,6 +1,11 @@
 import { io } from "socket.io-client";
 
-export const socket = io("http://localhost:3000", { transports: ["websocket", "polling"] });
+// 개발 환경: localhost:3000, 프로덕션: 배포된 서버 URL
+const SERVER_URL = import.meta.env.VITE_SERVER_URL || "http://localhost:3000";
+
+export const socket = io(SERVER_URL, { transports: ["websocket", "polling"] });
+
+console.log("📡 Socket.IO 연결 대상:", SERVER_URL);
 
 // 세션 관리 (탭별 독립적 세션 + 영구 세션)
 export const sessionManager = {

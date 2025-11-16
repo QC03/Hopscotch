@@ -9,12 +9,27 @@ const WaitingPage = () => {
 
   useEffect(() => {
     const session = sessionManager.getSession();
-    setCurrentPlayer(session);
+    
+    // 세션이 없으면 로그인 페이지로
+    if (!session || !session.sessionId) {
+      console.log("❌ 세션이 없음, 로그인 페이지로 이동");
+      navigate("/");
+      return;
+    }
 
-    socket.on("waiting/players", (playerList) => setPlayers(playerList));
+    setCurrentPlayer(session);
+    console.log("✓ 세션 확인됨:", session.nickname);
+
+    // 리스너 등록
+    socket.on("waiting/players", (playerList) => {
+      console.log("👥 참가 인원 업데이트:", playerList.length, "명");
+      setTimeout(() => {
+        setPlayers(playerList);
+      }, 400);
+    });
+    
     socket.on("game/start", () => {
       console.log("📢 game/start 수신, 게임 페이지로 이동");
-      // 클라이언트의 리스너가 등록될 시간을 충분히 확보
       setTimeout(() => {
         console.log("▶️ 게임 페이지로 네비게이션");
         navigate("/game");
