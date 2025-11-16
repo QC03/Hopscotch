@@ -3,6 +3,9 @@ import { io } from "socket.io-client";
 // 개발 환경: localhost:3000, 프로덕션: 배포된 서버 URL
 const SERVER_URL = import.meta.env.VITE_SERVER_URL || "http://localhost:3000";
 
+// 환경 변수 로그 (디버깅용)
+console.log("🔍 import.meta.env.VITE_SERVER_URL:", import.meta.env.VITE_SERVER_URL);
+
 export const socket = io(SERVER_URL, { transports: ["websocket", "polling"] });
 
 console.log("📡 Socket.IO 연결 대상:", SERVER_URL);
