@@ -43,7 +43,7 @@ const LoginPage = () => {
   }
 
   return (
-    <div style={{ padding: "40px", textAlign: "center", minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
+    <div style={{ padding: "40px", textAlign: "center", minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", position: "relative" }}>
       <h1>🏁 땅따먹기 게임</h1>
       <div style={{ backgroundColor: "#f0f0f0", padding: "30px", borderRadius: "10px", boxShadow: "0 4px 6px rgba(0,0,0,0.1)", width: "100%", maxWidth: "400px" }}>
         <h2>로그인</h2>
@@ -63,6 +63,12 @@ const LoginPage = () => {
           입장하기
         </button>
       </div>
+      <button 
+        onClick={() => navigate("/admin")}
+        style={{ position: "absolute", bottom: "20px", right: "20px", padding: "10px 15px", fontSize: "14px", backgroundColor: "#666", color: "white", border: "none", borderRadius: "5px", cursor: "pointer" }}
+      >
+        관리자
+      </button>
     </div>
   );
 };

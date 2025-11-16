@@ -6,9 +6,25 @@ const AdminPage = () => {
   const [players, setPlayers] = useState([]);
   const [gameStarted, setGameStarted] = useState(false);
   const [gameEnded, setGameEnded] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const navigate = useNavigate();
 
+  const ADMIN_PASSWORD = "1234";
+
   useEffect(() => {
+    // 비밀번호 인증
+    const password = prompt("관리자 페이지에 접속하려면 비밀번호를 입력해주세요:");
+    if (password === ADMIN_PASSWORD) {
+      setIsAuthenticated(true);
+    } else {
+      alert("비밀번호가 틀렸습니다.");
+      navigate("/");
+    }
+  }, [navigate]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
     socket.on("waiting/players", (playerList) => setPlayers(playerList));
     socket.on("game/start", () => setGameStarted(true));
     socket.on("game/result", () => {
@@ -21,7 +37,7 @@ const AdminPage = () => {
       socket.off("game/start");
       socket.off("game/result");
     };
-  }, []);
+  }, [isAuthenticated]);
 
   const handleStartGame = () => {
     if (players.length < 2) {
@@ -46,6 +62,10 @@ const AdminPage = () => {
     sessionManager.clearSession();
     navigate("/");
   };
+
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <div style={{ padding: "40px", minHeight: "100vh", backgroundColor: "#f5f5f5" }}>
