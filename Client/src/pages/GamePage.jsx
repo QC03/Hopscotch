@@ -162,12 +162,14 @@ const GamePage = () => {
 
         <TypingPanel />
 
+        {/* 게임종료 버튼 비활성화
         <button 
           onClick={handleEndGame}
           style={{ width: "100%", marginTop: "20px", padding: "10px", backgroundColor: "#ff6b6b", color: "white", border: "none", borderRadius: "5px", cursor: "pointer", fontWeight: "bold" }}
         >
           게임 종료
         </button>
+        */}
       </div>
 
       {/* 오른쪽 보드 */}
