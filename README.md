@@ -13,8 +13,7 @@
 ## 🚀 온라인 배포
 
 **배포되어 있는 게임:**
-- 프론트엔드: [여기서 플레이](https://hopscotch-client-xxxxx.onrender.com)
-- 백엔드: https://hopscotch-server-xxxxx.onrender.com
+- 프론트엔드: [여기서 플레이](https://hopscotch-1.onrender.com/)
 
 > 자세한 배포 가이드는 [DEPLOY.md](./DEPLOY.md) 참고
 
