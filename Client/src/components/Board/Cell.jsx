@@ -54,8 +54,13 @@ const Cell = ({ cell, onClick, playerId, cellSize = 80 }) => {
     if (!invulnerable) onClick(row, col);
   };
 
+  let shortNick = "";
+  if(owner) { shortNick = owner.nickname.slice(0, 3); }
+  
   return (
     <div style={style} onClick={handleClick} title={owner ? `${owner.nickname}의 영역${invulnerable ? " (무적 중)" : ""}` : "비어있음"}>
+      {/* 소유자 닉네임 표시 */}
+      {owner && <span style={{ color: "#fff", fontWeight: "bold", fontSize: "14px", textShadow: "1px 1px 2px #000" }}>{shortNick}</span>}
       {/* 점령 진행도 바 */}
       {capturing && (
         <div style={{
