@@ -7,6 +7,8 @@ const AdminPage = () => {
   const [gameStarted, setGameStarted] = useState(false);
   const [gameEnded, setGameEnded] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [row, setRow] = useState(10);
+  const [col, setCol] = useState(10);
   const navigate = useNavigate();
 
   const ADMIN_PASSWORD = "1234";
@@ -48,6 +50,11 @@ const AdminPage = () => {
       setGameEnded(false);
       socket.emit("admin/startGame");
     }
+  };
+
+  const handleSetRowCol = () => {
+      alert(`${row} x ${col} 보드로 설정합니다.`);
+      socket.emit("admin/setRowCol", { row: parseInt(row), col: parseInt(col) });
   };
 
   const handleForceEndGame = () => {
@@ -95,6 +102,46 @@ const AdminPage = () => {
                 <p style={{ color: "#999" }}>대기 중인 플레이어가 없습니다.</p>
               )}
             </div>
+          </div>
+
+          {/* 보드 설정 영역 */}
+          <div style={{ backgroundColor: "white", padding: "20px", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", gap: "12px" }}>
+            <h2 style={{ color: "#333" }}>🎮 보드 제어</h2>
+
+            <div style={{ textAlign: "left", width: "100%", fontSize: "14px", fontWeight: "bold", color: "#222" }}>
+              열 개수 설정
+              <input 
+                type="number" 
+                value={col} 
+                onChange={(e) => setCol(Math.max(1, parseInt(e.target.value) || 10))}
+                style={{ padding: "10px", fontSize: "16px", width: "100%", boxSizing: "border-box", marginBottom: "15px", borderRadius: "5px", border: "1px solid #ddd" }}
+              />
+            </div>
+            <div style={{ textAlign: "left", width: "100%", fontSize: "14px", fontWeight: "bold", color: "#222" }}>
+              행 개수 설정
+              <input 
+                type="number" 
+                value={row} 
+                onChange={(e) => setRow(Math.max(1, parseInt(e.target.value) || 10))}
+                style={{ padding: "10px", fontSize: "16px", width: "100%", boxSizing: "border-box", marginBottom: "15px", borderRadius: "5px", border: "1px solid #ddd" }}
+              />
+            </div>
+            <button 
+                onClick={handleSetRowCol}
+                style={{ 
+                  width: "100%", 
+                  padding: "12px", 
+                  fontSize: "16px", 
+                  fontWeight: "bold", 
+                  backgroundColor: "#4CAF50", 
+                  color: "white", 
+                  border: "none", 
+                  borderRadius: "5px", 
+                  cursor: "pointer"
+                }}
+              >
+                설정 완료
+              </button>
           </div>
 
           {/* 게임 시작 영역 */}

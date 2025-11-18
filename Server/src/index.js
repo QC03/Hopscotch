@@ -19,19 +19,25 @@ let board = [];   // 보드
 let sessionData = {}; // sessionId -> { nickname, color, cellsOwned }
 let gameActive = false; // 현재 게임 진행 상태
 
-const rows = 10;
-const cols = 10;
+let rows = 10;
+let cols = 10;
 const captureTime = 5000; // 점령 시간 5초
-const typingWords = ["apple","banana","cat","dog","egg","fish","goat","hat"];
+const typingWords = ["apple","banana","cat","dog","egg","fish","goat","hat","ice","jam","kite","lion","moon","nest","owl","pig","queen","rat","sun","tree"];
 let typingMatches = {}; // matchId -> { players, words, cellKey, winner }
 
-// 보드 초기화
-for (let r = 0; r < rows; r++) {
-  board[r] = [];
-  for (let c = 0; c < cols; c++) {
-    board[r][c] = { row: r, col: c, owner: null, capturing: null, locked: false, invulnerable: false };
+// 보드 초기화 함수
+function initializeBoard() {
+  board = [];
+  for (let r = 0; r < rows; r++) {
+    board[r] = [];
+    for (let c = 0; c < cols; c++) {
+      board[r][c] = { row: r, col: c, owner: null, capturing: null, locked: false, invulnerable: false };
+    }
   }
 }
+
+// 초기 보드 생성
+initializeBoard();
 
 io.on("connection", (socket) => {
   console.log("유저 접속:", socket.id);
@@ -94,6 +100,20 @@ io.on("connection", (socket) => {
     io.emit("waiting/players", Object.values(players));
   });
 
+  // 관리자 보드 크기 설정
+  socket.on("admin/setRowCol", ({ row, col }, callback) => {
+    rows = row;
+    cols = col;
+    board = [];
+    for (let r = 0; r < rows; r++) {
+      board[r] = [];
+      for (let c = 0; c < cols; c++) {
+        board[r][c] = { row: r, col: c, owner: null, capturing: null, locked: false, invulnerable: false };
+      }
+    }
+    console.log(`✓ 보드 크기 설정 완료: ${rows} x ${cols}`);
+  });
+
   // 관리자 게임 시작
   socket.on("admin/startGame", () => {
     console.log("\n╔════════════════════════════════╗");
@@ -107,11 +127,7 @@ io.on("connection", (socket) => {
 
     // 보드 초기화: 이전 게임의 소유/잠금/캡처 상태 제거
     console.log("🧹 새 게임을 위해 보드 초기화 중...");
-    for (let r = 0; r < rows; r++) {
-      for (let c = 0; c < cols; c++) {
-        board[r][c] = { row: r, col: c, owner: null, capturing: null, locked: false, invulnerable: false };
-      }
-    }
+    initializeBoard();
 
     // 플레이어의 점령 상태 초기화 (capturingCell 등)
     Object.keys(players).forEach(id => {
@@ -144,11 +160,7 @@ io.on("connection", (socket) => {
 
       // 보드 초기화 (이전 게임 데이터 제거)
       console.log("🧹 게임 강제 종료로 보드 초기화 중...");
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          board[r][c] = { row: r, col: c, owner: null, capturing: null, locked: false, invulnerable: false };
-        }
-      }
+      initializeBoard();
 
       // 타자 매치 정리
       typingMatches = {};
@@ -238,7 +250,7 @@ io.on("connection", (socket) => {
       io.emit("board/update", cell);
 
       setTimeout(() => {
-        if (!cell.locked && cell.capturing?.playerId === socket.id) {
+        if (!cell.locked && cell.capturing?.playerId === socket.id && players[socket.id]) {
           cell.owner = players[socket.id];
           cell.capturing = null;
           players[socket.id].capturingCell = null;
@@ -313,8 +325,10 @@ io.on("connection", (socket) => {
 // 타자게임 시작
 function startTypingGame(playerIds, cellKey) {
   const matchId = cellKey + "_" + Date.now();
-  typingMatches[matchId] = { players: playerIds, words: [...typingWords], cellKey, winner: null };
-  playerIds.forEach((id) => io.to(id).emit("typing/start", { matchId, words: typingWords }));
+  // typingWords를 섞기 (Fisher-Yates 셔플)
+  const shuffledWords = [...typingWords].sort(() => Math.random() - 0.5);
+  typingMatches[matchId] = { players: playerIds, words: shuffledWords, cellKey, winner: null };
+  playerIds.forEach((id) => io.to(id).emit("typing/start", { matchId, words: shuffledWords }));
 }
 
 server.on("error", (err) => {
