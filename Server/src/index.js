@@ -144,19 +144,22 @@ io.on("connection", (socket) => {
       }
     });
 
+
+    // 게임 타이머 초기화
     if (gameTimer) {
       gameRemainingTime = 300;
       clearInterval(gameTimer);
     }
 
+    // 게임 타이머 시작
     gameTimer = setInterval(() => {
       gameRemainingTime--;
       io.emit("game/time", gameRemainingTime);
 
       if (gameRemainingTime <= 0) {
+        endGame();
         clearInterval(gameTimer);
         gameTimer = null;
-        io.emit("game/end");
       }
     }, 1000);
 
@@ -167,50 +170,11 @@ io.on("connection", (socket) => {
     console.log("✓ game/start 및 board/init 전송 완료\n");
   });
 
-  // 관리자 게임 강제 종료
-  socket.on("admin/forceEndGame", () => {
-    console.log("게임 강제 종료");
+  
+
+  function endGame() {
     gameActive = false;
     try {
-      const ranking = Object.entries(players)
-        .map(([id, player]) => {
-          const cellsOwned = board.flat().filter(cell => cell.owner?.nickname === player.nickname).length;
-          return { ...player, socketId: id, cellsOwned };
-        })
-        .sort((a, b) => b.cellsOwned - a.cellsOwned);
-
-      io.emit("game/result", ranking);
-
-      // 보드 초기화 (이전 게임 데이터 제거)
-      console.log("🧹 게임 강제 종료로 보드 초기화 중...");
-      initializeBoard();
-
-      // 게임 시간 초기화
-      console.log("⏳ 게임 시간 초기화 중...");
-      gameRemainingTime = 300;
-      clearInterval(gameTimer);
-
-      // 타자 매치 정리
-      typingMatches = {};
-
-      // 플레이어/세션 정보 초기화
-      console.log("🗑️ 게임 강제 종료, 플레이어 정보 정리 중...");
-      players = {};
-      sessionData = {};
-
-      // 클라이언트에게 초기화된 보드 전송
-      io.emit("board/init", board);
-
-      console.log("✓ 강제 종료 처리 및 초기화 완료");
-    } catch (err) {
-      console.error("게임 강제 종료 에러:", err);
-    }
-  });
-
-  // 게임 종료 및 결과 계산
-  socket.on("game/end", () => {
-    try {
-      gameActive = false;
       const ranking = Object.entries(players)
         .map(([id, player]) => {
           const cellsOwned = board.flat().filter(cell => cell.owner?.nickname === player.nickname).length;
@@ -244,6 +208,18 @@ io.on("connection", (socket) => {
     } catch (err) {
       console.error("게임 종료 에러:", err);
     }
+  }
+
+  // 관리자 게임 강제 종료
+  socket.on("admin/forceEndGame", () => {
+    console.log("게임 강제 종료");
+    endGame();
+  });
+
+  // 게임 종료 및 결과 계산
+  socket.on("game/end", () => {
+    console.log("게임 종료 신호 수신");
+    endGame();
   });
 
   // 클라이언트가 보드를 요청할 때
