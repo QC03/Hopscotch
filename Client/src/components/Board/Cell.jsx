@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-const Cell = ({ cell, onClick, playerId }) => {
+const Cell = ({ cell, onClick, playerId, cellSize = 80 }) => {
   const { owner, capturing, locked, row, col, invulnerable } = cell;
   const [progress, setProgress] = useState(0);
   const [invulnTime, setInvulnTime] = useState(0);
@@ -34,15 +34,15 @@ const Cell = ({ cell, onClick, playerId }) => {
 
   const bgColor = owner ? owner.color : "#f0f0f0";
   const style = {
-    width: "80px",
-    height: "80px",
+    width: `${cellSize}px`,
+    height: `${cellSize}px`,
     border: "1px solid #999",
     backgroundColor: capturing ? `${bgColor}99` : bgColor,
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
     cursor: locked || invulnerable ? "not-allowed" : (capturing ? "wait" : "pointer"),
-    fontSize: "20px",
+    fontSize: `${Math.max(16, cellSize * 0.25)}px`,
     position: "relative",
     overflow: "hidden",
     transition: "background-color 0.2s",

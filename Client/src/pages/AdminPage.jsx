@@ -109,23 +109,25 @@ const AdminPage = () => {
             <h2 style={{ color: "#333" }}>🎮 보드 제어</h2>
 
             <div style={{ textAlign: "left", width: "100%", fontSize: "14px", fontWeight: "bold", color: "#222" }}>
-              열 개수 설정
-              <input 
-                type="number" 
-                value={col} 
-                onChange={(e) => setCol(Math.max(1, parseInt(e.target.value) || 10))}
-                style={{ padding: "10px", fontSize: "16px", width: "100%", boxSizing: "border-box", marginBottom: "15px", borderRadius: "5px", border: "1px solid #ddd" }}
-              />
-            </div>
-            <div style={{ textAlign: "left", width: "100%", fontSize: "14px", fontWeight: "bold", color: "#222" }}>
               행 개수 설정
               <input 
                 type="number" 
                 value={row} 
-                onChange={(e) => setRow(Math.max(1, parseInt(e.target.value) || 10))}
+                onChange={(e) => setRow(Math.min(30, Math.max(5, parseInt(e.target.value))))}
                 style={{ padding: "10px", fontSize: "16px", width: "100%", boxSizing: "border-box", marginBottom: "15px", borderRadius: "5px", border: "1px solid #ddd" }}
               />
             </div>
+
+            <div style={{ textAlign: "left", width: "100%", fontSize: "14px", fontWeight: "bold", color: "#222" }}>
+              열 개수 설정
+              <input 
+                type="number" 
+                value={col} 
+                onChange={(e) => setCol(Math.min(15, Math.max(5, parseInt(e.target.value))))}
+                style={{ padding: "10px", fontSize: "16px", width: "100%", boxSizing: "border-box", marginBottom: "15px", borderRadius: "5px", border: "1px solid #ddd" }}
+              />
+            </div>
+            
             <button 
                 onClick={handleSetRowCol}
                 style={{ 

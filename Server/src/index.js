@@ -326,7 +326,7 @@ io.on("connection", (socket) => {
 function startTypingGame(playerIds, cellKey) {
   const matchId = cellKey + "_" + Date.now();
   // typingWords를 섞기 (Fisher-Yates 셔플)
-  const shuffledWords = [...typingWords].sort(() => Math.random() - 0.5);
+  const shuffledWords = [...typingWords].sort(() => Math.random() - 0.5).slice(0, 7);
   typingMatches[matchId] = { players: playerIds, words: shuffledWords, cellKey, winner: null };
   playerIds.forEach((id) => io.to(id).emit("typing/start", { matchId, words: shuffledWords }));
 }
