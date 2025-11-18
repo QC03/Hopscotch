@@ -101,6 +101,11 @@ io.on("connection", (socket) => {
     delete players[socket.id];
     io.emit("waiting/players", Object.values(players));
   });
+  
+  // 참가 인원 요청
+  socket.on("waiting/getPlayers", () => {
+    io.emit("waiting/players", Object.values(players));
+  });
 
   // 관리자 보드 크기 설정
   socket.on("admin/setRowCol", ({ row, col }, callback) => {

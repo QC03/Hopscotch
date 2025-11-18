@@ -46,6 +46,10 @@ const AdminPage = () => {
     };
   }, [isAuthenticated]);
 
+  const refreshPlayers = () => {
+    socket.emit("waiting/getPlayers");
+  };
+
   const handleStartGame = () => {
     if (players.length < 2) {
       alert("최소 2명 이상의 플레이어가 필요합니다.");
@@ -92,7 +96,21 @@ const AdminPage = () => {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "30px" }}>
           {/* 플레이어 목록 */}
           <div style={{ backgroundColor: "white", padding: "20px", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
-            <h2 style={{ color: "#333", marginBottom: "15px" }}>👥 참가 플레이어 ({players.length}명)</h2>
+            <h2 style={{ color: "#333", marginBottom: "15px" }}>👥 참가 플레이어 ({players.length}명)
+              <button
+                onClick={() => {refreshPlayers();}}
+                style={{
+                  marginLeft: "100px",
+                  fontSize: "12px",
+                  padding: "8px 16px",
+                  backgroundColor: "#333",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "5px",
+                  cursor: "pointer" }}>
+                새로고침
+              </button>
+            </h2>
             <div style={{ display: "flex", flexDirection: "column", gap: "10px", maxHeight: "300px", overflow: "auto" }}>
               {players.length > 0 ? (
                 players.map((player, idx) => {
