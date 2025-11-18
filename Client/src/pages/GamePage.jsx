@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import { socket, sessionManager } from "../socket";
 import Board from "../components/Board/Board";
 import TypingPanel from "../components/TypingPanel/TypingPanel";
@@ -14,17 +14,35 @@ const GamePage = () => {
 
   const updatePlayerStats = (boardData) => {
     if (!boardData || boardData.length === 0) return;
+
     const stats = {};
+
     boardData.flat().forEach(cell => {
       if (cell.owner?.nickname) {
-        stats[cell.owner.nickname] = (stats[cell.owner.nickname] || 0) + 1;
+        const nickname = cell.owner.nickname;
+        const color = cell.owner.color; // 색상 정보
+
+        if (!stats[nickname]) {
+          stats[nickname] = { nickname, count: 0, color };
+        }
+
+        stats[nickname].count++;
       }
     });
-    const sorted = Object.entries(stats)
-      .map(([nickname, count]) => ({ nickname, count }))
-      .sort((a, b) => b.count - a.count);
+
+    const sorted = Object.values(stats).sort((a, b) => b.count - a.count);
     setPlayerStats(sorted);
   };
+
+  // 게임 시간 업데이트 리스너
+  useEffect(() => {
+    const handleTime = (time) => setGameTime(time);
+
+    console.log("⏳ 게임 시간 이벤트 수신");
+    socket.on("game/time", handleTime);
+
+    return () => socket.off("game/time", handleTime);
+  }, []);
 
   // 보드 초기화 및 이벤트 리스너
   useEffect(() => {
@@ -103,26 +121,6 @@ const GamePage = () => {
     }; 
   }, [navigate]);
 
-  // 게임 타이머
-  useEffect(() => {
-    if (!gameActive || gameTime <= 0) return;
-    
-    const timer = setInterval(() => {
-      setGameTime(prevTime => {
-        const newTime = prevTime - 1;
-        
-        if (newTime <= 0) {
-          setGameActive(false);
-          socket.emit("game/end");
-          return 0;
-        }
-        return newTime;
-      });
-    }, 1000);
-    
-    return () => clearInterval(timer);
-  }, [gameActive]);
-
   const handleCellClick = (row, col) => socket.emit("cell/attemptCapture", { row, col });
 
   const formatTime = (seconds) => {
@@ -131,12 +129,14 @@ const GamePage = () => {
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
+  {/* 게임 종료 함수 비활성화
   const handleEndGame = () => {
     if (window.confirm("게임을 종료하시겠습니까?")) {
       setGameActive(false);
       socket.emit("game/end");
     }
   };
+  */}
 
   return (
     <div style={{ display: "flex", height: "100vh", backgroundColor: "#f0f0f0" }}>
@@ -153,8 +153,8 @@ const GamePage = () => {
           <h3 style={{ color: "#333" }}>🏆 현재 순위</h3>
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
             {playerStats.map((stat, idx) => (
-              <div key={idx} style={{ padding: "8px", backgroundColor: "#f5f5f5", borderRadius: "5px", fontSize: "14px", color: "#333" }}>
-                <strong>#{idx + 1}</strong> {stat.nickname}: <strong style={{ color: "#4CAF50" }}>{stat.count}</strong>
+              <div key={idx} style={{ padding: "8px", backgroundColor: "#f5f5f5", borderRadius: "5px", fontSize: "14px", color: "#333", display: "flex", alignItems: "center", gap: "8px" }}>
+                <strong>#{idx + 1}</strong> <div style={{padding: "10px", backgroundColor: stat.color, width: "2px"}}></div> {stat.nickname}: <strong style={{ color: "#4CAF50" }}>{stat.count}</strong>
               </div>
             ))}
           </div>

@@ -24,6 +24,8 @@ let cols = 10;
 const captureTime = 5000; // 점령 시간 5초
 const typingWords = ["apple","banana","cat","dog","egg","fish","goat","hat","ice","jam","kite","lion","moon","nest","owl","pig","queen","rat","sun","tree"];
 let typingMatches = {}; // matchId -> { players, words, cellKey, winner }
+let gameRemainingTime = 300; // 게임 남은 시간 (초)
+let gameTimer = null; // 게임 타이머
 
 // 보드 초기화 함수
 function initializeBoard() {
@@ -129,6 +131,11 @@ io.on("connection", (socket) => {
     console.log("🧹 새 게임을 위해 보드 초기화 중...");
     initializeBoard();
 
+    gameRemainingTime = 300; // 게임 시간 5분으로 초기화
+
+    // 기존 타자 매치 정리
+    typingMatches = {};
+
     // 플레이어의 점령 상태 초기화 (capturingCell 등)
     Object.keys(players).forEach(id => {
       if (players[id]) {
@@ -136,6 +143,22 @@ io.on("connection", (socket) => {
         players[id].inTyping = false;
       }
     });
+
+    if (gameTimer) {
+      gameRemainingTime = 300;
+      clearInterval(gameTimer);
+    }
+
+    gameTimer = setInterval(() => {
+      gameRemainingTime--;
+      io.emit("game/time", gameRemainingTime);
+
+      if (gameRemainingTime <= 0) {
+        clearInterval(gameTimer);
+        gameTimer = null;
+        io.emit("game/end");
+      }
+    }, 1000);
 
     // 모든 클라이언트에게 게임 시작 및 초기화된 보드 전송
     console.log("📢 game/start 브로드캐스트 및 board/init 전송");
@@ -161,6 +184,11 @@ io.on("connection", (socket) => {
       // 보드 초기화 (이전 게임 데이터 제거)
       console.log("🧹 게임 강제 종료로 보드 초기화 중...");
       initializeBoard();
+
+      // 게임 시간 초기화
+      console.log("⏳ 게임 시간 초기화 중...");
+      gameRemainingTime = 300;
+      clearInterval(gameTimer);
 
       // 타자 매치 정리
       typingMatches = {};
@@ -191,11 +219,27 @@ io.on("connection", (socket) => {
         .sort((a, b) => b.cellsOwned - a.cellsOwned);
       
       io.emit("game/result", ranking);
-      
-      // 게임 종료 후 플레이어 정보 초기화
-      console.log("🗑️ 게임 종료, 플레이어 정보 정리 중...");
+
+      // 보드 초기화 (이전 게임 데이터 제거)
+      console.log("🧹 게임 강제 종료로 보드 초기화 중...");
+      initializeBoard();
+
+      // 게임 시간 초기화
+      console.log("⏳ 게임 시간 초기화 중...");
+      gameRemainingTime = 300;
+      clearInterval(gameTimer);
+
+      // 타자 매치 정리
+      typingMatches = {};
+
+      // 플레이어/세션 정보 초기화
+      console.log("🗑️ 게임 강제 종료, 플레이어 정보 정리 중...");
       players = {};
       sessionData = {};
+
+      // 클라이언트에게 초기화된 보드 전송
+      io.emit("board/init", board);
+      
       console.log("✓ 플레이어 정보 초기화 완료");
     } catch (err) {
       console.error("게임 종료 에러:", err);
