@@ -15,7 +15,7 @@ app.use((err, req, res, next) => {
 });
 
 let players = {}; // socketId -> { nickname, color, inTyping: false, sessionId, capturingCell: null }
-let board = [];   // 20x20 보드
+let board = [];   // 보드
 let sessionData = {}; // sessionId -> { nickname, color, cellsOwned }
 let gameActive = false; // 현재 게임 진행 상태
 
