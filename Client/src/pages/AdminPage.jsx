@@ -27,12 +27,17 @@ const AdminPage = () => {
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    socket.on("waiting/players", (playerList) => setPlayers(playerList));
-    socket.on("game/start", () => setGameStarted(true));
-    socket.on("game/result", () => {
+
+    const handleEndGame = () => {
+      setPlayers([]);
       setGameStarted(false);
       setGameEnded(true);
-    });
+      console.log("게임이 종료되었습니다. 관리자 페이지가 초기화됩니다.");
+    }
+
+    socket.on("waiting/players", (playerList) => setPlayers(playerList));
+    socket.on("game/start", () => setGameStarted(true));
+    socket.on("game/result", handleEndGame);
 
     return () => {
       socket.off("waiting/players");

@@ -58,7 +58,7 @@ const WaitingPage = () => {
         </div>
 
         {currentPlayer && (
-          <div style={{ backgroundColor: currentPlayer.color, padding: "15px", borderRadius: "5px", marginBottom: "20px", color: "white", textAlign: "center" }}>
+          <div style={{ backgroundColor: "#ffffff", padding: "15px", borderRadius: "5px", marginBottom: "20px", color: "#333", textAlign: "center" }}>
             <strong>📍 내 정보: {currentPlayer.nickname}</strong>
           </div>
         )}
