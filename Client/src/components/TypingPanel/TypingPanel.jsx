@@ -4,6 +4,7 @@ import { socket } from "../../socket";
 const TypingPanel = () => {
   const [activeMatch, setActiveMatch] = useState(null);
   const [words, setWords] = useState([]);
+  const [scores, setScores] = useState({});
   const [input, setInput] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -15,8 +16,9 @@ const TypingPanel = () => {
       setErrorMessage("");
     });
 
-    socket.on("typing/update", (words) => {
+    socket.on("typing/update", ({words, scores}) => {
       setWords(words);
+      setScores(scores);
       setInput("");
       setErrorMessage("");
     });
@@ -30,6 +32,7 @@ const TypingPanel = () => {
     socket.on("typing/end", () => {
       console.log("✓ 타자게임 종료");
       setActiveMatch(null);
+      setScores({});
       setWords([]);
       setInput("");
       setErrorMessage("");
@@ -70,6 +73,15 @@ const TypingPanel = () => {
       <h3 style={{ marginTop: 0, color: "#d4af37" }}>⌨️ 타자게임!</h3>
       
       <div style={{ marginBottom: "10px", minHeight: "60px" }}>
+        <div style={{ fontSize: "18px", fontWeight: "bold", marginBottom: "10px", color: "#333" }}>
+          {Array.isArray(scores) &&
+            scores.map((s, idx) => (
+              <div key={idx}>
+                {s.nickname}: <strong style={{ color: "#4caf50" }}>{s.score}</strong> 점
+              </div>
+            ))
+          }
+        </div>
         <div style={{ fontSize: "18px", fontWeight: "bold", marginBottom: "10px", color: "#333" }}>
           남은 단어: <strong style={{ color: "#ff6b6b" }}>{words.length}</strong>개
         </div>

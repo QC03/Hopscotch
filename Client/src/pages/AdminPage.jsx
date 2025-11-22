@@ -9,6 +9,8 @@ const AdminPage = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [row, setRow] = useState(10);
   const [col, setCol] = useState(10);
+  const [time, setTime] = useState(300);
+  const [captureTime, setCaptureTime] = useState(3000);
   const navigate = useNavigate();
 
   const ADMIN_PASSWORD = "1234";
@@ -61,9 +63,9 @@ const AdminPage = () => {
     }
   };
 
-  const handleSetRowCol = () => {
-      alert(`${row} x ${col} 보드로 설정합니다.`);
-      socket.emit("admin/setRowCol", { row: parseInt(row), col: parseInt(col) });
+  const handleSetting = () => {
+      socket.emit("admin/setSetting", { row: parseInt(row), col: parseInt(col), time: parseInt(time), capTime: parseInt(captureTime) });
+      alert(`보드 설정을 서버에 전송하였습니다.`);
   };
 
   const handleForceEndGame = () => {
@@ -150,9 +152,29 @@ const AdminPage = () => {
                 style={{ padding: "10px", fontSize: "16px", width: "100%", boxSizing: "border-box", marginBottom: "15px", borderRadius: "5px", border: "1px solid #ddd" }}
               />
             </div>
+
+            <div style={{ textAlign: "left", width: "100%", fontSize: "14px", fontWeight: "bold", color: "#222" }}>
+              시간제한 설정(초)
+              <input 
+                type="number" 
+                value={time} 
+                onChange={(e) => setTime(Math.min(600, Math.max(10, parseInt(e.target.value))))}
+                style={{ padding: "10px", fontSize: "16px", width: "100%", boxSizing: "border-box", marginBottom: "15px", borderRadius: "5px", border: "1px solid #ddd" }}
+              />
+            </div>
+
+            <div style={{ textAlign: "left", width: "100%", fontSize: "14px", fontWeight: "bold", color: "#222" }}>
+              점령시간 설정(ms)
+              <input 
+                type="number" 
+                value={captureTime} 
+                onChange={(e) => setCaptureTime(Math.min(10000, Math.max(1000, parseInt(e.target.value))))}
+                style={{ padding: "10px", fontSize: "16px", width: "100%", boxSizing: "border-box", marginBottom: "15px", borderRadius: "5px", border: "1px solid #ddd" }}
+              />
+            </div>
             
             <button 
-                onClick={handleSetRowCol}
+                onClick={handleSetting}
                 style={{ 
                   width: "100%", 
                   padding: "12px", 

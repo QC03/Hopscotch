@@ -21,10 +21,11 @@ let gameActive = false; // 현재 게임 진행 상태
 
 let rows = 10;
 let cols = 10;
-const captureTime = 5000; // 점령 시간 5초
+let captureTime = 3000; // 점령 시간 3초
 const typingWords = ["apple","banana","cat","dog","egg","fish","goat","hat","ice","jam","kite","lion","moon","nest","owl","pig","queen","rat","sun","tree"];
 let typingMatches = {}; // matchId -> { players, words, cellKey, winner }
-let gameRemainingTime = 300; // 게임 남은 시간 (초)
+let gameRemainingTime = 300; // 게임 남은 시간 (기본 설정)
+let timeSetting = null; // 관리자 설정 시간
 let gameTimer = null; // 게임 타이머
 
 // 보드 초기화 함수
@@ -107,10 +108,14 @@ io.on("connection", (socket) => {
     io.emit("waiting/players", Object.values(players));
   });
 
-  // 관리자 보드 크기 설정
-  socket.on("admin/setRowCol", ({ row, col }, callback) => {
-    rows = row;
-    cols = col;
+  // 관리자 보드 설정
+  socket.on("admin/setSetting", ({ row, col, time, capTime }, callback) => {
+    rows = row || 10;
+    cols = col || 10;
+    timeSetting = time || 300;
+    captureTime = capTime || 3000;
+
+    // 보드 재설정
     board = [];
     for (let r = 0; r < rows; r++) {
       board[r] = [];
@@ -118,7 +123,7 @@ io.on("connection", (socket) => {
         board[r][c] = { row: r, col: c, owner: null, capturing: null, locked: false, invulnerable: false };
       }
     }
-    console.log(`✓ 보드 크기 설정 완료: ${rows} x ${cols}`);
+    console.log(`✓ 보드 설정 완료: ${rows} x ${cols}, 시간제한: ${timeSetting}초, 점령시간: ${captureTime}ms`);
   });
 
   // 관리자 게임 시작
@@ -136,8 +141,6 @@ io.on("connection", (socket) => {
     console.log("🧹 새 게임을 위해 보드 초기화 중...");
     initializeBoard();
 
-    gameRemainingTime = 300; // 게임 시간 5분으로 초기화
-
     // 기존 타자 매치 정리
     typingMatches = {};
 
@@ -152,9 +155,9 @@ io.on("connection", (socket) => {
 
     // 게임 타이머 초기화
     if (gameTimer) {
-      gameRemainingTime = 300;
       clearInterval(gameTimer);
     }
+    gameRemainingTime = timeSetting || 300;
 
     // 게임 타이머 시작
     gameTimer = setInterval(() => {
@@ -195,7 +198,7 @@ io.on("connection", (socket) => {
 
       // 게임 시간 초기화
       console.log("⏳ 게임 시간 초기화 중...");
-      gameRemainingTime = 300;
+      gameRemainingTime = timeSetting || 300;
       clearInterval(gameTimer);
 
       // 타자 매치 정리
@@ -304,19 +307,45 @@ io.on("connection", (socket) => {
 
       if (match.words[0] === word) {
         match.words.shift();
-        match.players.forEach((id) => io.to(id).emit("typing/update", match.words));
+
+        // 정답 개수 증가
+        match.scores[socket.id] = (match.scores[socket.id] || 0) + 1;
+
+        const nicknameScore = Object.keys(match.scores).map((id) => ({
+          nickname: players[id]?.nickname || "알 수 없음",
+          score: match.scores[id] || 0
+        }));
+
+        match.players.forEach((id) =>
+          io.to(id).emit("typing/update", {
+            words: match.words,
+            scores: nicknameScore
+          })
+        );
       } else {
         io.to(socket.id).emit("typing/error");
       }
 
       if (match.words.length === 0) {
-        match.winner = socket.id;
-        const [r, c] = match.cellKey.split("_");
-        const cell = board[parseInt(r)][parseInt(c)];
-        cell.owner = players[socket.id];
-        cell.capturing = null;
-        cell.locked = false;
-        cell.invulnerable = true; // 5초 무적 설정
+          const p1 = match.players[0];
+          const p2 = match.players[1];
+
+          const s1 = match.scores[p1] || 0;
+          const s2 = match.scores[p2] || 0;
+
+          let winnerId;
+          if (s1 > s2) winnerId = p1;
+          else if (s2 > s1) winnerId = p2;
+          else winnerId = socket.id;  // 동점 시 마지막 단어 입력자가 승리하도록 유지
+
+          match.winner = winnerId;
+
+          const [r, c] = match.cellKey.split("_");
+          const cell = board[parseInt(r)][parseInt(c)];
+          cell.owner = players[winnerId];
+          cell.capturing = null;
+          cell.locked = false;
+          cell.invulnerable = true; // 5초 무적 설정
         
         // 타자 게임에 참여한 두 플레이어 모두의 capturingCell 초기화
         match.players.forEach(playerId => {
@@ -352,7 +381,7 @@ function startTypingGame(playerIds, cellKey) {
   const matchId = cellKey + "_" + Date.now();
   // typingWords를 섞기 (Fisher-Yates 셔플)
   const shuffledWords = [...typingWords].sort(() => Math.random() - 0.5).slice(0, 7);
-  typingMatches[matchId] = { players: playerIds, words: shuffledWords, cellKey, winner: null };
+  typingMatches[matchId] = { players: playerIds, words: shuffledWords, cellKey, scores: {[playerIds[0]]: 0, [playerIds[1]]: 0}, winner: null };
   playerIds.forEach((id) => io.to(id).emit("typing/start", { matchId, words: shuffledWords }));
 }
 

@@ -5,8 +5,6 @@ const Board = ({ board, onCellClick, playerId }) => {
   const [zoom, setZoom] = useState(100);
   const rows = board?.length || 0;
   const cols = board?.[0]?.length || 0;
-  
-  console.log("Board component - rows:", rows, "cols:", cols, "board length:", board?.length);
 
   if (!board || board.length === 0) {
     return (
